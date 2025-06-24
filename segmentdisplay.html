@@ -1,0 +1,71 @@
+<section class="seven_segment_display">
+        <div id="segment0" class="segment_a"></div>
+        <div id="segment1" class="segment_b"></div>
+        <div id="segment2" class="segment_c"></div>
+        <div id="segment3" class="segment_d"></div>
+        <div id="segment4" class="segment_e"></div>
+        <div id="segment5" class="segment_f"></div>
+        <div id="segment6" class="segment_g"></div>
+    </section><!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seven Segment Display</title>
+    <link rel="stylesheet" href="segment_style.css">
+</head>
+<body>
+    <header>
+        <button type="submit" onclick="showdisplay()">Start</button>
+    </header>
+    
+</body>
+<script>
+    let intervalId = null; // Store interval ID to prevent multiple calls
+
+    function showdisplay() {
+        if (intervalId) return; // Prevent multiple intervals from running
+
+        const segmentMap = {
+            0: ["A", "B", "C", "D", "E", "F"],
+            1: ["B", "C"],
+            2: ["A", "B", "G", "E", "D"],
+            3: ["A", "B", "G", "C", "D"],
+            4: ["F", "G", "B", "C"],
+            5: ["A", "F", "G", "C", "D"],
+            6: ["A", "F", "E", "D", "C", "G"],
+            7: ["A", "B", "C"],
+            8: ["A", "B", "C", "D", "E", "F", "G"],
+            9: ["A", "B", "C", "D", "F", "G"]
+        };
+
+        const letterMap = { "A": 0, "B": 1, "C": 2, "D": 3, "E": 4, "F": 5, "G": 6 };
+        const segments = [];
+
+        for (let i = 0; i < 7; i++) {
+            segments[i] = document.querySelector("#segment" + i);
+        }
+
+        let count = 0;
+
+        function updateDisplay() {
+            displaynum(count);
+            count = (count + 1) % 10;
+        }
+
+        intervalId = setInterval(updateDisplay, 1000); // Store interval ID
+
+        function displaynum(num) {
+            for (let i = 0; i < 7; i++) {
+                segments[i].style.opacity = 0.2;
+            }
+
+            let activeSegments = segmentMap[num];
+            activeSegments.forEach((letter) => {
+                let index = letterMap[letter];
+                segments[index].style.opacity = 1;
+            });
+        }
+    }
+</script>
+</html>

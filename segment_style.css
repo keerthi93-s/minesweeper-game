@@ -1,0 +1,76 @@
+
+section{
+    padding: 4px;
+    margin: 8px;
+}
+
+
+/* Top horizontal segment */
+.segment_a {
+    background-color: red;
+    width: 60px;
+    height: 8px;
+    position: absolute;
+    top: 10px;
+    left: 45px;
+}
+
+/* Top-right vertical segment */
+.segment_b {
+    background-color: red;
+    width: 8px;
+    height: 60px;
+    position: absolute;
+    top: 15px;
+    left: 110px;
+}
+
+/* Bottom-right vertical segment */
+.segment_c {
+    background-color: red;
+    width: 8px;
+    height: 60px;
+    position: absolute;
+    top: 85px;
+    left: 110px;
+}
+
+/* Bottom horizontal segment */
+.segment_d {
+    background-color: red;
+    width: 60px;
+    height: 8px;
+    position: absolute;
+    top: 150px;
+    left: 45px;
+}
+
+/* Bottom-left vertical segment */
+.segment_e {
+    background-color: red;
+    width: 8px;
+    height: 60px;
+    position: absolute;
+    top: 85px;
+    left: 35px;
+}
+
+/* Top-left vertical segment */
+.segment_f {
+    background-color: red;
+    width: 8px;
+    height: 60px;
+    position: absolute;
+    top: 15px;
+    left: 35px;
+}
+
+/* Middle horizontal segment */
+.segment_g {
+    background-color: red;
+    width: 60px;
+    height: 8px;
+    position: absolute;
+    top: 80px;
+    left: 45px;
+}

@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mine Sweeper</title>
+  <link href="https://fonts.googleapis.com/css2?family=Montez&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="minesgame.css">
+</head>
+<body>
+  <header>
+    <img class="minesweeperlogo" src="images/monelogo.jpg" alt="Minesweeper Logo" />
+    <h1>Mine Sweeper</h1>
+  </header>
+  <section>
+    <div class="startover">
+      <button type="button" onclick="newGame()">New Game</button>
+      <div class="timer-container">
+        <section class="seven_segment_display" id="minTensDisplay">
+          <div id="min-tens-segment0" class="segment_a"></div>
+          <div id="min-tens-segment1" class="segment_b"></div>
+          <div id="min-tens-segment2" class="segment_c"></div>
+          <div id="min-tens-segment3" class="segment_d"></div>
+          <div id="min-tens-segment4" class="segment_e"></div>
+          <div id="min-tens-segment5" class="segment_f"></div>
+          <div id="min-tens-segment6" class="segment_g"></div>
+        </section>
+        <section class="seven_segment_display" id="minUnitsDisplay">
+          <div id="min-units-segment0" class="segment_a"></div>
+          <div id="min-units-segment1" class="segment_b"></div>
+          <div id="min-units-segment2" class="segment_c"></div>
+          <div id="min-units-segment3" class="segment_d"></div>
+          <div id="min-units-segment4" class="segment_e"></div>
+          <div id="min-units-segment5" class="segment_f"></div>
+          <div id="min-units-segment6" class="segment_g"></div>
+        </section>
+        <div class="colon"></div>
+        <section class="seven_segment_display" id="secTensDisplay">
+          <div id="sec-tens-segment0" class="segment_a"></div>
+          <div id="sec-tens-segment1" class="segment_b"></div>
+          <div id="sec-tens-segment2" class="segment_c"></div>
+          <div id="sec-tens-segment3" class="segment_d"></div>
+          <div id="sec-tens-segment4" class="segment_e"></div>
+          <div id="sec-tens-segment5" class="segment_f"></div>
+          <div id="sec-tens-segment6" class="segment_g"></div>
+        </section>
+        <section class="seven_segment_display" id="secUnitsDisplay">
+          <div id="sec-units-segment0" class="segment_a"></div>
+          <div id="sec-units-segment1" class="segment_b"></div>
+          <div id="sec-units-segment2" class="segment_c"></div>
+          <div id="sec-units-segment3" class="segment_d"></div>
+          <div id="sec-units-segment4" class="segment_e"></div>
+          <div id="sec-units-segment5" class="segment_f"></div>
+          <div id="sec-units-segment6" class="segment_g"></div>
+        </section>
+      </div>
+      <span class="game-message"></span>
+    </div>
+    <div class="inputData">
+      <form>
+        <label for="row">Rows:</label>
+        <input type="number" id="row" placeholder="Enter number of rows" value="4" />
+        <label for="col">Columns:</label>
+        <input type="number" id="col" placeholder="Enter number of columns" value="4" />
+        <label for="minenum">Mines:</label>
+        <input type="number" id="minenum" placeholder="Enter number of mines" value="4" />
+      </form>
+    </div>
+    <div class="gameGrid"></div>
+  </section>
+
+  <script>
+    const messageDisplay = document.querySelector('.game-message');
+    let intervalId = null;
+    let gameOver = false;
+    const segmentMap = {
+      0: ["A", "B", "C", "D", "E", "F"],
+      1: ["B", "C"],
+      2: ["A", "B", "G", "E", "D"],
+      3: ["A", "B", "G", "C", "D"],
+      4: ["F", "G", "B", "C"],
+      5: ["A", "F", "G", "C", "D"],
+      6: ["A", "F", "E", "D", "C", "G"],
+      7: ["A", "B", "C"],
+      8: ["A", "B", "C", "D", "E", "F", "G"],
+      9: ["A", "B", "C", "D", "F", "G"]
+    };
+    const letterMap = { "A": 0, "B": 1, "C": 2, "D": 3, "E": 4, "F": 5, "G": 6 };
+    const minTensSegments = Array.from(document.querySelectorAll('#minTensDisplay div'));
+    const minUnitsSegments = Array.from(document.querySelectorAll('#minUnitsDisplay div'));
+    const secTensSegments = Array.from(document.querySelectorAll('#secTensDisplay div'));
+    const secUnitsSegments = Array.from(document.querySelectorAll('#secUnitsDisplay div'));
+
+    // Add input event listeners to stop timer when editing
+    const inputs = document.querySelectorAll('.inputData input');
+    inputs.forEach(input => {
+      input.addEventListener('input', () => {
+        if (!gameOver) {
+          stopTimer();
+        }
+      });
+    });
+
+    function displayTime(minTens, minUnits, secTens, secUnits) {
+      const allSegments = [minTensSegments, minUnitsSegments, secTensSegments, secUnitsSegments];
+      allSegments.forEach(segmentArray => {
+        segmentArray.forEach(segment => segment.style.opacity = 0);
+      });
+    
+      updateSegmentDisplay(minTensSegments, minTens);
+      updateSegmentDisplay(minUnitsSegments, minUnits);
+      updateSegmentDisplay(secTensSegments, secTens);
+      updateSegmentDisplay(secUnitsSegments, secUnits);
+    }
+
+    function updateSegmentDisplay(segmentArray, digit) {
+      const activeSegments = segmentMap[digit];
+      activeSegments.forEach(letter => {
+        const segmentIndex = letterMap[letter];
+        segmentArray[segmentIndex].style.opacity = 1;
+        segmentArray[segmentIndex].style.boxShadow = "0px 0px 10px 3px rgba(255, 0, 0, 0.9)";
+      });
+    }
+
+    function startTimer() {
+      if (intervalId) clearInterval(intervalId);
+      let totalSeconds = 0;
+      displayTime(0, 0, 0, 0);
+      intervalId = setInterval(() => {
+        totalSeconds++;
+        const minutes = Math.floor(totalSeconds / 60);
+        const seconds = totalSeconds % 60;
+        const minTens = Math.floor(minutes / 10);
+        const minUnits = minutes % 10;
+        const secTens = Math.floor(seconds / 10);
+        const secUnits = seconds % 10;
+        displayTime(minTens, minUnits, secTens, secUnits);
+      }, 1000);
+    }
+
+    function stopTimer() {
+      if (intervalId) {
+        clearInterval(intervalId);
+        intervalId = null;
+      }
+    }
+
+    function generateGrid() {
+      messageDisplay.innerHTML = "";
+      const rows = parseInt(document.getElementById("row").value);
+      const cols = parseInt(document.getElementById("col").value);
+      const mineCount = parseInt(document.getElementById("minenum").value);
+      const gameGrid = document.querySelector(".gameGrid");
+
+      gameGrid.innerHTML = "";
+      gameGrid.style.gridTemplateColumns = `repeat(${cols}, 30px)`;
+      gameGrid.style.gridTemplateRows = `repeat(${rows}, 30px)`;
+
+      const mines = new Set();
+      while (mines.size < mineCount) {
+        const randomRow = Math.floor(Math.random() * rows);
+        const randomCol = Math.floor(Math.random() * cols);
+        mines.add(`${randomRow}-${randomCol}`);
+      }
+
+      for (let i = 0; i < rows; i++) {
+        for (let j = 0; j < cols; j++) {
+          const cell = document.createElement("div");
+          cell.classList.add("cell");
+          cell.id = `cell-${i}-${j}`;
+          cell.dataset.mine = mines.has(`${i}-${j}`) ? "true" : "false";
+          cell.addEventListener("click", () => {
+            if (!gameOver) cellClick(i, j); // Only allow clicks if game isn't over
+          });
+          gameGrid.appendChild(cell);
+        }
+      }
+    }
+
+    function newGame() {
+      gameOver = false;
+      stopTimer();
+      generateGrid();
+      startTimer();
+    }
+    let global = true;
+    function cellClick(row, col) {
+      if (gameOver) return; // Prevent any action if game is over
+      
+      const cell = document.getElementById(`cell-${row}-${col}`);
+      if (cell.dataset.mine === "true") {
+        cell.classList.add("mine");
+        messageDisplay.innerHTML = "game over";
+        
+        gameOver = true;
+        revealMines();
+        stopTimer();
+      } else {
+        revealEmptyCells(row, col);
+      }
+      if (checkGameEnd()) {
+        global = false;
+        messageDisplay.innerHTML = "you win!";
+        messageDisplay.style.color = "green";
+        gameOver = true; // Set gameOver to true when winning
+        revealMines();
+        stopTimer();
+      }
+    }
+     
+    function revealMines() {
+      let allBombs = true;
+      const allCells = document.querySelectorAll(".cell");
+      allCells.forEach(cell => {
+        if (cell.dataset.mine === "true") {
+          cell.classList.add("mine");
+          cell.innerHTML = '<img src="images/spikyBall.jpeg" alt="Spiky Ball">';
+        } else {
+          allBombs = false;
+        }
+      });
+      if (!allBombs && global) {
+        messageDisplay.innerHTML = "oops! You Lose";
+        messageDisplay.style.color = "red";
+      }
+    }
+
+    function revealEmptyCells(row, col) {
+      const stack = [[row, col]];
+      const visited = new Set();
+      const directions = [
+        [-1, -1], [-1, 0], [-1, 1],
+        [0, -1],          [0, 1],
+        [1, -1], [1, 0], [1, 1]
+      ];
+
+      while (stack.length > 0) {
+        const [r, c] = stack.pop();
+        const cell = document.getElementById(`cell-${r}-${c}`);
+        if (!cell || visited.has(`${r}-${c}`) || cell.dataset.mine === "true") continue;
+        visited.add(`${r}-${c}`);
+        cell.classList.add("revealed");
+
+        let mineCount = 0;
+        directions.forEach(([dr, dc]) => {
+          const adjacentCell = document.getElementById(`cell-${r + dr}-${c + dc}`);
+          if (adjacentCell && adjacentCell.dataset.mine === "true") {
+            mineCount++;
+          }
+        });
+
+        if (mineCount === 0) {
+          directions.forEach(([dr, dc]) => {
+            const adjacentCell = document.getElementById(`cell-${r + dr}-${c + dc}`);
+            if (adjacentCell) {
+              adjacentCell.classList.add("nearby");
+            }
+            stack.push([r + dr, c + dc]);
+          });
+        } else {
+          cell.textContent = mineCount;
+          cell.style.color = mineCount === 1 ? "red" : "blue";
+        }
+      }
+    }
+
+    function checkGameEnd() {
+      const cells = document.querySelectorAll(".cell");
+      return Array.from(cells).every(cell =>
+        cell.dataset.mine === "true" || cell.classList.contains("revealed")
+      );
+    }
+  </script>
+</body>
+</html>
